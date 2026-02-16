@@ -2,35 +2,120 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>MRT AR Navigation</title>
+  <title>MRT AR Navigation Demo</title>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    .ui {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    .ui button {
+      display: block;
+      margin-bottom: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 
-<body style="margin:0">
+<body>
 
-<a-scene
-  xr-mode-ui="enabled: true"
-  renderer="colorManagement: true;"
-  webxr="optionalFeatures: hit-test, local-floor"
->
+<!-- Webcam -->
+<video id="webcam" autoplay playsinline></video>
 
-  <!-- Camera -->
-  <a-camera position="0 1.6 0"></a-camera>
+<!-- UI Buttons -->
+<div class="ui">
+  <button onclick="setDestination('exitA')">Exit A</button>
+  <button onclick="setDestination('exitB')">Exit B</button>
+  <button onclick="setDestination('toilet')">Toilet</button>
+</div>
 
-  <!-- Light -->
-  <a-light type="directional" position="1 3 2"></a-light>
-  <a-light type="ambient" intensity="0.5"></a-light>
-
-  <!-- Arrow -->
-  <a-entity id="arrow"
-            geometry="primitive: cone; radiusBottom: 0.2; radiusTop: 0; height: 0.6"
-            material="color: red"
-            position="0 0 -2"
-            rotation="0 0 -90">
+<!-- A-Frame Scene -->
+<a-scene embedded>
+  
+  <a-entity position="0 1.6 0">
+    <a-camera></a-camera>
   </a-entity>
 
+  <a-light type="ambient" intensity="1"></a-light>
+
+  <!-- Arrow Path Container -->
+  <a-entity id="path"></a-entity>
+
 </a-scene>
+
+<script>
+  const video = document.getElementById('webcam');
+
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+    });
+
+  function clearPath() {
+    const path = document.getElementById('path');
+    while (path.firstChild) {
+      path.removeChild(path.firstChild);
+    }
+  }
+
+  function createArrow(x, z, rotation) {
+    const arrow = document.createElement('a-cone');
+    arrow.setAttribute('position', `${x} 1.6 ${z}`);
+    arrow.setAttribute('rotation', `0 0 ${rotation}`);
+    arrow.setAttribute('radius-bottom', '0.3');
+    arrow.setAttribute('radius-top', '0');
+    arrow.setAttribute('height', '0.8');
+    arrow.setAttribute('color', 'lime');
+    arrow.setAttribute('animation',
+      'property: position; dir: alternate; dur: 800; loop: true; to: ' +
+      `${x} 1.7 ${z}`);
+    return arrow;
+  }
+
+  function setDestination(destination) {
+    clearPath();
+    const path = document.getElementById('path');
+
+    if (destination === 'exitA') {
+      for (let i = 0; i < 5; i++) {
+        path.appendChild(createArrow(0, -2 - i * 1.5, 0));
+      }
+    }
+
+    if (destination === 'exitB') {
+      for (let i = 0; i < 4; i++) {
+        path.appendChild(createArrow(1.5, -2 - i * 1.5, -90));
+      }
+    }
+
+    if (destination === 'toilet') {
+      for (let i = 0; i < 4; i++) {
+        path.appendChild(createArrow(-1.5, -2 - i * 1.5, 90));
+      }
+    }
+  }
+</script>
 
 </body>
 </html>
