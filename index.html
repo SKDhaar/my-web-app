@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>MRT AR Navigation</title>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
+</head>
+
+<body style="margin:0">
+
+<a-scene
+  xr-mode-ui="enabled: true"
+  renderer="colorManagement: true;"
+  webxr="optionalFeatures: hit-test, local-floor"
+>
+
+  <!-- Camera -->
+  <a-camera position="0 1.6 0"></a-camera>
+
+  <!-- Light -->
+  <a-light type="directional" position="1 3 2"></a-light>
+  <a-light type="ambient" intensity="0.5"></a-light>
+
+  <!-- Arrow -->
+  <a-entity id="arrow"
+            geometry="primitive: cone; radiusBottom: 0.2; radiusTop: 0; height: 0.6"
+            material="color: red"
+            position="0 0 -2"
+            rotation="0 0 -90">
+  </a-entity>
+
+</a-scene>
+
+</body>
+</html>
