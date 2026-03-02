@@ -1,53 +1,97 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>MRT Navigation</title>
+    <title>Indoor MRT Navigation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
     <style>
         body {
-            font-family: Arial;
-            text-align: center;
-            background-color: #f4f6f8;
             margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #eef2f7, #dce3f0);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .card {
+            background: white;
+            width: 95%;
+            max-width: 420px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             padding: 20px;
+            text-align: center;
         }
 
         h1 {
-            margin-bottom: 10px;
+            font-size: 22px;
+            margin-bottom: 5px;
         }
 
-        .step {
-            margin: 20px 0;
+        .progress {
+            font-size: 14px;
+            color: gray;
+            margin-bottom: 15px;
         }
 
         img {
             width: 100%;
-            max-width: 400px;
-            border-radius: 12px;
+            border-radius: 16px;
+            transition: opacity 0.4s ease;
         }
 
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            background: #007BFF;
-            color: white;
+        .btn {
             margin-top: 20px;
+            padding: 12px;
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .next {
+            background: #2563eb;
+            color: white;
+        }
+
+        .next:hover {
+            background: #1e4ed8;
+        }
+
+        .arrival {
+            background: #16a34a;
+            color: white;
+        }
+
+        .arrival-screen {
+            font-size: 18px;
+            font-weight: 600;
+            padding: 30px 0;
         }
     </style>
 </head>
 <body>
 
+<div class="card">
     <h1 id="destinationTitle"></h1>
-    <div id="stepContainer"></div>
-    <button id="nextBtn">Next Step</button>
+    <div class="progress" id="progressText"></div>
+    <div id="content"></div>
+    <button class="btn next" id="nextBtn">Next Step</button>
+</div>
 
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const destinationId = params.get("id");
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const destinationId = params.get("id");
 
-        const destinations = {
+    const destinations = {
             1: { name: "Exit A", steps: 8 },
             2: { name: "Exit B", steps: 6 },
             3: { name: "Exit C", steps: 7 },
@@ -59,39 +103,53 @@
             9: { name: "Toilet", steps: 2 }
         };
 
-        let currentStep = 1;
+    let currentStep = 1;
 
-        if (destinations[destinationId]) {
-            const destination = destinations[destinationId];
-            document.getElementById("destinationTitle").innerText =
-                "Directions to " + destination.name;
+    if (destinations[destinationId]) {
 
-            const container = document.getElementById("stepContainer");
+        const destination = destinations[destinationId];
+        const content = document.getElementById("content");
+        const nextBtn = document.getElementById("nextBtn");
 
-            function loadStep() {
-                container.innerHTML = "";
-                const img = document.createElement("img");
-                img.src = "images/dest" + destinationId + "/step" + currentStep + ".jpg";
-                container.appendChild(img);
+        document.getElementById("destinationTitle").innerText =
+            "Directions to " + destination.name;
 
-                if (currentStep >= destination.steps) {
-                    document.getElementById("nextBtn").innerText = "Arrived!";
-                    document.getElementById("nextBtn").disabled = true;
-                }
+        function loadStep() {
+
+            if (currentStep > destination.steps) {
+                content.innerHTML = `
+                    <div class="arrival-screen">
+                        🎉 You have arrived at ${destination.name}!
+                    </div>
+                `;
+                document.getElementById("progressText").innerText = "";
+                nextBtn.innerText = "Have a nice day!";
+                nextBtn.classList.remove("next");
+                nextBtn.classList.add("arrival");
+                nextBtn.disabled = true;
+                return;
             }
 
-            loadStep();
+            content.innerHTML = `
+                <img src="images/dest${destinationId}/step${currentStep}.jpg">
+            `;
 
-            document.getElementById("nextBtn").addEventListener("click", () => {
-                currentStep++;
-                loadStep();
-            });
-
-        } else {
-            document.getElementById("destinationTitle").innerText = "Invalid Destination";
+            document.getElementById("progressText").innerText =
+                "Step " + currentStep + " of " + destination.steps;
         }
-    </script>
+
+        loadStep();
+
+        nextBtn.addEventListener("click", () => {
+            currentStep++;
+            loadStep();
+        });
+
+    } else {
+        document.getElementById("destinationTitle").innerText = "Invalid Destination";
+        document.getElementById("nextBtn").style.display = "none";
+    }
+</script>
 
 </body>
 </html>
-
