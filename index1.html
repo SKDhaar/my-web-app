@@ -1,121 +1,97 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>MRT AR Navigation Demo</title>
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-    }
+    <title>MRT Navigation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
 
-    video {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -1;
-    }
+        h1 {
+            margin-bottom: 10px;
+        }
 
-    .ui {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      z-index: 10;
-    }
+        .step {
+            margin: 20px 0;
+        }
 
-    .ui button {
-      display: block;
-      margin-bottom: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
+        img {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background: #007BFF;
+            color: white;
+            margin-top: 20px;
+        }
+    </style>
 </head>
-
 <body>
 
-<!-- Webcam -->
-<video id="webcam" autoplay playsinline></video>
+    <h1 id="destinationTitle"></h1>
+    <div id="stepContainer"></div>
+    <button id="nextBtn">Next Step</button>
 
-<!-- UI Buttons -->
-<div class="ui">
-  <button onclick="setDestination('exitA')">Exit A</button>
-  <button onclick="setDestination('exitB')">Exit B</button>
-  <button onclick="setDestination('toilet')">Toilet</button>
-</div>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const destinationId = params.get("id");
 
-<!-- A-Frame Scene -->
-<a-scene embedded>
-  
-  <a-entity position="0 1.6 0">
-    <a-camera></a-camera>
-  </a-entity>
+        const destinations = {
+            1: { name: "Exit A", steps: 8 },
+            2: { name: "Exit B", steps: 6 },
+            3: { name: "Exit C", steps: 7 },
+            4: { name: "Exit D", steps: 11 },
+            5: { name: "Exit E", steps: 15 },
+            6: { name: "Lift to Exit A", steps: 5 },
+            7: { name: "Lift to Exit B, D, E", steps: 2 },
+            8: { name: "Lift to Exit C", steps: 12 },
+            9: { name: "Toilet", steps: 2 }
+        };
 
-  <a-light type="ambient" intensity="1"></a-light>
+        let currentStep = 1;
 
-  <!-- Arrow Path Container -->
-  <a-entity id="path"></a-entity>
+        if (destinations[destinationId]) {
+            const destination = destinations[destinationId];
+            document.getElementById("destinationTitle").innerText =
+                "Directions to " + destination.name;
 
-</a-scene>
+            const container = document.getElementById("stepContainer");
 
-<script>
-  const video = document.getElementById('webcam');
+            function loadStep() {
+                container.innerHTML = "";
+                const img = document.createElement("img");
+                img.src = "images/dest" + destinationId + "/step" + currentStep + ".jpg";
+                container.appendChild(img);
 
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-      video.srcObject = stream;
-    });
+                if (currentStep >= destination.steps) {
+                    document.getElementById("nextBtn").innerText = "Arrived!";
+                    document.getElementById("nextBtn").disabled = true;
+                }
+            }
 
-  function clearPath() {
-    const path = document.getElementById('path');
-    while (path.firstChild) {
-      path.removeChild(path.firstChild);
-    }
-  }
+            loadStep();
 
-  function createArrow(x, z, rotation) {
-    const arrow = document.createElement('a-cone');
-    arrow.setAttribute('position', `${x} 1.6 ${z}`);
-    arrow.setAttribute('rotation', `0 0 ${rotation}`);
-    arrow.setAttribute('radius-bottom', '0.3');
-    arrow.setAttribute('radius-top', '0');
-    arrow.setAttribute('height', '0.8');
-    arrow.setAttribute('color', 'lime');
-    arrow.setAttribute('animation',
-      'property: position; dir: alternate; dur: 800; loop: true; to: ' +
-      `${x} 1.7 ${z}`);
-    return arrow;
-  }
+            document.getElementById("nextBtn").addEventListener("click", () => {
+                currentStep++;
+                loadStep();
+            });
 
-  function setDestination(destination) {
-    clearPath();
-    const path = document.getElementById('path');
-
-    if (destination === 'exitA') {
-      for (let i = 0; i < 5; i++) {
-        path.appendChild(createArrow(0, -2 - i * 1.5, 0));
-      }
-    }
-
-    if (destination === 'exitB') {
-      for (let i = 0; i < 4; i++) {
-        path.appendChild(createArrow(1.5, -2 - i * 1.5, -90));
-      }
-    }
-
-    if (destination === 'toilet') {
-      for (let i = 0; i < 4; i++) {
-        path.appendChild(createArrow(-1.5, -2 - i * 1.5, 90));
-      }
-    }
-  }
-</script>
+        } else {
+            document.getElementById("destinationTitle").innerText = "Invalid Destination";
+        }
+    </script>
 
 </body>
 </html>
+
